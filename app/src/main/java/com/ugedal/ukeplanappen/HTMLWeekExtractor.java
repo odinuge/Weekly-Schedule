@@ -60,6 +60,7 @@ public class HTMLWeekExtractor {
 
             int weekNumber = getWeekNumber(link.text());
             String title = link.text().replace(".pdf", "");
+            title = title.substring(0,1).toUpperCase() + title.substring(1).toLowerCase();
 
             String info = new String();
             if(weekNumber>0){
@@ -78,7 +79,7 @@ public class HTMLWeekExtractor {
                 info += " - ";
                 cal.add(Calendar.DATE,6);
                 info += sdf.format(cal.getTime());
-                title = "Ukeplan "+className+".Trinn";
+                title = "Ukeplan";
 
                 Matcher m = p.matcher(link.text());
                 if (m.find()) {

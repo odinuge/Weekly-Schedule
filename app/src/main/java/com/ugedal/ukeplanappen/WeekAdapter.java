@@ -38,7 +38,7 @@ public class WeekAdapter extends RecyclerView.Adapter<WeekAdapter.WeekViewHolder
             contactViewHolder.info.setText(curr.getInfo());
 
             if (curr.getWeekNumber()== -1){
-                contactViewHolder.bigNumber.setVisibility(View.INVISIBLE);
+                contactViewHolder.bigNumber.setVisibility(View.GONE);
             } else {
                 contactViewHolder.bigNumber.setVisibility(View.VISIBLE);
                 contactViewHolder.bigNumber.setText(Integer.toString(curr.getWeekNumber()));

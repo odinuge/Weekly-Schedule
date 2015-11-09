@@ -80,8 +80,6 @@ public class ListFragment extends Fragment {
         rv.setLayoutManager(llm);
         rv.setHasFixedSize(true);
         new SetupAsync(this).execute();
-        //WeekAdapter adapter = new WeekAdapter(list);
-        //rv.setAdapter(adapter);
         return view;
 
     }
@@ -91,25 +89,28 @@ public class ListFragment extends Fragment {
 
     public void openPDF(Week currentWeek){
 
-        String pdf = "";
+        String pdf = new String();
         if (!currentWeek.getTitle().contains(".pdf"))
             pdf = ".pdf";
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        int trinn = sharedPref.getInt(getString(R.string.current_trinn), R.id.trinn_1);
+
+        int className =(classes.lastIndexOf(trinn)+1);
 
         File pdfFile = new File(getActivity().getExternalFilesDir(null),
-                currentWeek.getWeekNumber()+currentWeek.getTitle()+pdf);
+                currentWeek.getWeekNumber()+currentWeek.getTitle()+className+pdf);
 
 
-        if (pdfFile.isFile() && pdfFile.length() == 0) {
-
+        if (pdfFile.isFile() && pdfFile.length() == 0)
             pdfFile.delete();
-        }
+
         if (pdfFile.isFile() && pdfFile.exists()) {
             StartPDFIntentMethod(pdfFile);
-        } else {
-
-            DownloadFileAsync dlAsync = new DownloadFileAsync(getActivity(),pdfFile, currentWeek);
-            dlAsync.execute(currentWeek.getDlUrl().replaceAll(" ", "%20"));
+            return;
         }
+        DownloadFileAsync dlAsync = new DownloadFileAsync(getActivity(),pdfFile, currentWeek);
+        dlAsync.execute(currentWeek.getDlUrl().replaceAll(" ", "%20"));
+
 
 
 
@@ -132,7 +133,8 @@ public class ListFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
-            rv.setAdapter(null);
+            rv.setVisibility(View.INVISIBLE);
+            //((MainActivity) getActivity()).swipeContainer.setRefreshing(true);
         }
 
         @Override
@@ -314,7 +316,6 @@ public class ListFragment extends Fragment {
                 startActivity(intent);
                 Log.i("LOG-UGEDAL", "The PATH of the opned File: " + PATH);
             } catch (Exception e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(
@@ -333,8 +334,6 @@ public class ListFragment extends Fragment {
                                 try {
                                     startActivity(marketIntent);
                                 } catch (Exception e) {
-                                    // TODO Auto-generated catch
-                                    // block
                                     e.printStackTrace();
                                 }
                             }
