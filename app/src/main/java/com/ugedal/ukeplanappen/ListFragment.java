@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2015 Odin Ugedal
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package com.ugedal.ukeplanappen;
 
 import android.app.DownloadManager;
@@ -38,21 +60,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-
-/**
- * Created by odin on 11/8/15.
- */
 public class ListFragment extends Fragment {
     ArrayList<Week> MyList = new ArrayList<Week>();
 
-    SetupAsync Setup = new SetupAsync(this);
-    // SetupAsync setup;// = new SetupAsync();
-    boolean setupDone = false;
-    String ClassName;
-    //DownloadFileAsync DownloadFileAsync = new DownloadFileAsync(getActivity());
     RecyclerView rv;
-    DownloadManager downloadManager;
-    private long downloadReference;
 
     static ArrayList<Integer> classes = new ArrayList<Integer>();
     static {
@@ -67,7 +78,6 @@ public class ListFragment extends Fragment {
         classes.add(R.id.trinn_9);
         classes.add(R.id.trinn_10);
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -92,14 +102,14 @@ public class ListFragment extends Fragment {
         String pdf = new String();
         if (!currentWeek.getTitle().contains(".pdf"))
             pdf = ".pdf";
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = getActivity()
+				.getPreferences(Context.MODE_PRIVATE);
         int trinn = sharedPref.getInt(getString(R.string.current_trinn), R.id.trinn_1);
 
-        int className =(classes.lastIndexOf(trinn)+1);
+        int className = classes.lastIndexOf(trinn)+1;
 
         File pdfFile = new File(getActivity().getExternalFilesDir(null),
-                currentWeek.getWeekNumber()+currentWeek.getTitle()+className+pdf);
-
+                currentWeek.getWeekNumber() + currentWeek.getTitle() + className + pdf);
 
         if (pdfFile.isFile() && pdfFile.length() == 0)
             pdfFile.delete();
@@ -110,16 +120,12 @@ public class ListFragment extends Fragment {
         }
         DownloadFileAsync dlAsync = new DownloadFileAsync(getActivity(),pdfFile, currentWeek);
         dlAsync.execute(currentWeek.getDlUrl().replaceAll(" ", "%20"));
-
-
-
-
     }
+
     public class SetupAsync extends AsyncTask<String, String, String> {
         ListFragment Fragment = null;
         int className;
         public SetupAsync(ListFragment Fragment) {
-            // TODO Auto-generated constructor stub
             attach(Fragment);
         }
 
@@ -134,7 +140,6 @@ public class ListFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             rv.setVisibility(View.INVISIBLE);
-            //((MainActivity) getActivity()).swipeContainer.setRefreshing(true);
         }
 
         @Override
@@ -143,26 +148,18 @@ public class ListFragment extends Fragment {
             SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
             int trinn = sharedPref.getInt(getString(R.string.current_trinn), R.id.trinn_1);
 
-            className =(classes.lastIndexOf(trinn)+1);
+            className = classes.lastIndexOf(trinn)+1;
             String h = "http://aset.no/klassetrinn/"+className+"-trinn/?vis=ukeplaner";
-
 
             try {
                 MyList = new HTMLWeekExtractor(getActivity()).extractWeeks(h, className);
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
                 return e1.getMessage();
             }
 
-            //
             return null;
 
-        }
-
-        protected void onProgressUpdate(String... progress) {
-
-            // dialog.setProgress(Integer.parseInt(progress[0]));
         }
 
         protected void onPostExecute(String result) {
@@ -175,12 +172,10 @@ public class ListFragment extends Fragment {
 
 
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                     rv.setVisibility(View.INVISIBLE);
                     Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
-                //setListShown(true);
             } else {
                 MyList = new HTMLWeekExtractor(getActivity()).getList(null,className);
                 WeekAdapter adapter = new WeekAdapter(MyList, getActivity());
@@ -194,11 +189,9 @@ public class ListFragment extends Fragment {
     public class DownloadFileAsync extends AsyncTask<String, String, String>
             implements OnCancelListener {
 
-        ProgressDialog dialog;
         AppCompatActivity activity = null;
         InputStream input = null;
         OutputStream output = null;
-        boolean cancel = false;
         File pdfFile;
         Week currentWeek;
 
@@ -210,16 +203,12 @@ public class ListFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
-
             ((MainActivity) getActivity()).swipeContainer.setRefreshing(true);
         }
 
         @Override
         protected String doInBackground(String... aurl) {
-            if (cancel == true)
-                return "ERROR";
             try {
-
                 int count;
                 URL url1 = new URL(aurl[0]);
                 URLConnection conexion = url1.openConnection();
@@ -241,109 +230,67 @@ public class ListFragment extends Fragment {
 
                 while ((count = input.read(data)) != -1) {
                     total += count;
-                    // publishing the progress....
-                    publishProgress("" + (int) (total * 100 / lenghtOfFile));
                     output.write(data, 0, count);
-
-
                 }
 
                 output.flush();
                 output.close();
                 input.close();
-                if(cancel)
-                    pdfFile.delete();
-
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e1) {
-                    // TODO Auto-generated catch block
-                    // e1.printStackTrace();
-                }
-
             } catch (Exception e) {
                 e.printStackTrace();
                 pdfFile.delete();
                 return e.getMessage();
-
             }
-
             return null;
 
-        }
-
-        protected void onProgressUpdate(String... progress) {
-            if (activity != null)
-                dialog.setProgress(Integer.parseInt(progress[0]));
         }
 
         protected void onPostExecute(String result) {
             ((MainActivity) getActivity()).swipeContainer.setRefreshing(false);
             if(result==null) {
                 StartPDFIntentMethod(pdfFile);
-            }else {
+            } else {
                 pdfFile.delete();
                 Toast.makeText(getActivity(), result, Toast.LENGTH_SHORT).show();
             }
-
-
         }
-
-        @Override
-        public void onCancel(DialogInterface dialog) {
-            // TODO Auto-generated method stub
-            // pdfFile.delete();
-            // this.cancel(true);
-
-        }
-
     }
 
-    private void StartPDFIntentMethod(File pdfFile) {// Must Have
-        // TODO Auto-generated method stub
-        // pdfFile = new File(Environment.getExternalStorageDirectory()
-        // + "/.UkeplanAppen/" + fileName);
-
+    private void StartPDFIntentMethod(File pdfFile) {
         if (pdfFile.exists() && pdfFile.length() == 0) {
             pdfFile.delete();
-
-        } else if (pdfFile.isFile()) {
-            Uri PATH = Uri.fromFile(pdfFile);
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(PATH, "application/pdf");
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            try {
-                startActivity(intent);
-                Log.i("LOG-UGEDAL", "The PATH of the opned File: " + PATH);
-            } catch (Exception e) {
-                e.printStackTrace();
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(
-                        getActivity());
-                builder.setTitle("PDF Leser");
-                builder.setMessage("Ingen PDF leser tilgjengelig. Vill du laste ned Adobe Reader fra Play Market?");
-                builder.setPositiveButton("Ja",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog,
-                                                int which) {
-                                Intent marketIntent = new Intent(
-                                        Intent.ACTION_VIEW);
-                                marketIntent.setData(Uri
-                                        .parse("market://details?id=com.adobe.reader"));
-                                try {
-                                    startActivity(marketIntent);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        });
-                builder.setNegativeButton("Nei", null);
-                builder.create().show();
-            }
-
+			return;
         }
+		Uri PATH = Uri.fromFile(pdfFile);
+		Intent intent = new Intent(Intent.ACTION_VIEW);
+		intent.setDataAndType(PATH, "application/pdf");
+		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+		try {
+			startActivity(intent);
+			return;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(
+				getActivity());
+		builder.setTitle("PDF");
+		builder.setMessage("Kan ikke åpne PDF. Åpne Google Play for å finne en PDF-leser.");
+		builder.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Intent marketIntent = new Intent(Intent.ACTION_VIEW);
+				marketIntent.setData(Uri
+						.parse("https://play.google.com/store/search?q=pdf&c=apps"));
+				try {
+					startActivity(marketIntent);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		builder.setNegativeButton("Nei", null);
+		builder.create().show();
     }
-
-
 }

@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2015 Odin Ugedal
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package com.ugedal.ukeplanappen;
 
 import android.content.Context;
@@ -29,7 +51,6 @@ public class MainActivity extends AppCompatActivity
     ListFragment mListFragment;
     SwipeRefreshLayout swipeContainer;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,30 +73,22 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         int trinn = sharedPref.getInt(getString(R.string.current_trinn), R.id.trinn_1);
         navigationView.setCheckedItem(trinn);
-        //onNavigationItemSelected(navigationView.getMenu().findItem(trinn));
         getSupportActionBar().setTitle(navigationView.getMenu().findItem(trinn).getTitle());
+
+
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         // Setup refresh listener which triggers new data loading
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // Your code to refresh the list here.
-                // Make sure you call swipeContainer.setRefreshing(false)
-                // once the network request has completed successfully.
                 mListFragment.refreshContent();
             }
         });
-        // Configure the refreshing colors
         swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
 
-
-    }
-    @Override
-    public void onResume(){
-        super.onResume();
 
     }
 
@@ -96,12 +109,15 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         int group_id = item.getGroupId();
         if (group_id == R.id.trinn_chooser){
+            // Save new state, and update the fragment
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putInt(getString(R.string.current_trinn), id);
             editor.commit();
+
             TextView text = (TextView) findViewById(R.id.textView);
             text.setText(item.getTitle());
+
             getSupportActionBar().setTitle(item.getTitle());
             swipeContainer.setRefreshing(true);
 
