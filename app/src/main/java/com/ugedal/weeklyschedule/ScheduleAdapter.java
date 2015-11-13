@@ -20,56 +20,52 @@
  * THE SOFTWARE.
  */
 
-package com.ugedal.ukeplanappen;
+package com.ugedal.weeklyschedule;
 
-import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
 
-public class WeekAdapter extends RecyclerView.Adapter<WeekAdapter.WeekViewHolder> {
+public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.WeekViewHolder> {
 
-    private List<Week> contactList;
-    private Context mContext;
+    private List<Schedule> scheduleList;
+    private ListFragment mContext;
 
-    public WeekAdapter(List<Week> contactList, Context mContext) {
-        this.contactList = contactList;
+    public ScheduleAdapter(List<Schedule> contactList, ListFragment mContext) {
+        this.scheduleList = contactList;
         this.mContext = mContext;
     }
 
     @Override
     public int getItemCount() {
-        return contactList.size();
+        return scheduleList.size();
     }
 
     @Override
     public void onBindViewHolder(WeekViewHolder contactViewHolder, int i) {
-            Week curr = contactList.get(i);
-            contactViewHolder.title.setText(curr.getTitle());
-            contactViewHolder.info.setText(curr.getInfo());
+        Schedule curr = scheduleList.get(i);
+        contactViewHolder.title.setText(curr.getTitle());
+        contactViewHolder.info.setText(curr.getInfo());
 
-            if (curr.getWeekNumber()== -1){
-                contactViewHolder.bigNumber.setVisibility(View.GONE);
-            } else {
-                contactViewHolder.bigNumber.setVisibility(View.VISIBLE);
-                contactViewHolder.bigNumber.setText(Integer.toString(curr.getWeekNumber()));
+        // OnClickListener for the cards
+        contactViewHolder.setClickListener(new ItemClickListener() {
+            @Override
+            public void onClick(View view, int position, boolean isLongClick) {
+                mContext.openPDF(scheduleList.get(position));
             }
-			// OnClickListener for the cards
-            contactViewHolder.setClickListener(new ItemClickListener() {
-                @Override
-                public void onClick(View view, int position, boolean isLongClick) {
-                    ((ListFragment)((MainActivity) mContext).getSupportFragmentManager().findFragmentById(R.id.list_fragment))
-                            .openPDF(contactList.get(position));
-                }
-            });
+        });
+
+        if (curr.getWeekNumber() == Schedule.NO_WEEK_NUMBER) {
+            contactViewHolder.bigNumber.setVisibility(View.GONE);
+            return;
+        }
+        contactViewHolder.bigNumber.setVisibility(View.VISIBLE);
+        contactViewHolder.bigNumber.setText(Integer.toString(curr.getWeekNumber()));
+
     }
 
     @Override
@@ -80,6 +76,7 @@ public class WeekAdapter extends RecyclerView.Adapter<WeekAdapter.WeekViewHolder
 
         return new WeekViewHolder(itemView);
     }
+
     public static class WeekViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         protected TextView title;
         protected TextView info;
@@ -89,17 +86,19 @@ public class WeekAdapter extends RecyclerView.Adapter<WeekAdapter.WeekViewHolder
 
         public WeekViewHolder(View v) {
             super(v);
-            this.title =  (TextView) v.findViewById(R.id.title);
-            this.info = (TextView)  v.findViewById(R.id.info);
+            this.title = (TextView) v.findViewById(R.id.title);
+            this.info = (TextView) v.findViewById(R.id.info);
             this.bigNumber = (TextView) v.findViewById(R.id.big_number);
             v.setOnClickListener(this);
         }
+
         public void setClickListener(ItemClickListener itemClickListener) {
             this.clickListener = itemClickListener;
         }
+
         @Override
         public void onClick(View view) {
-            clickListener.onClick(view, getPosition(), false);
+            clickListener.onClick(view, getAdapterPosition(), false);
         }
     }
 

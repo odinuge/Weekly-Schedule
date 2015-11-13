@@ -5,8 +5,8 @@ android {
     buildToolsVersion "23.0.2"
 
     defaultConfig {
-        applicationId "com.ugedal.ukeplanappen"
-        minSdkVersion 15
+        applicationId "com.ugedal.weeklyschedule"
+        minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"

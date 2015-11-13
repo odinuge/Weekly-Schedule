@@ -1,4 +1,4 @@
-package com.ugedal.ukeplanappen;
+package com.ugedal.weeklyschedule;
 
 import org.junit.Test;
 

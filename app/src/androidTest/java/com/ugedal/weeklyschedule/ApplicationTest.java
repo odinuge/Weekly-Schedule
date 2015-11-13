@@ -1,4 +1,4 @@
-package com.ugedal.ukeplanappen;
+package com.ugedal.weeklyschedule;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

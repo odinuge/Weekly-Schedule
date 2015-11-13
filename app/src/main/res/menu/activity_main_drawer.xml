@@ -4,45 +4,42 @@
     <group android:checkableBehavior="single"
         android:id="@+id/trinn_chooser">
         <item
-            android:id="@+id/trinn_1"
-
-            android:title="1. trinn" />
+            android:id="@+id/grade_1"
+            android:title="@string/first_grade" />
         <item
-            android:id="@+id/trinn_2"
-            android:title="2. trinn" />
+            android:id="@+id/grade_2"
+            android:title="@string/second_grade" />
         <item
-            android:id="@+id/trinn_3"
-            android:title="3. trinn" />
+            android:id="@+id/grade_3"
+            android:title="@string/third_grade" />
         <item
-            android:id="@+id/trinn_4"
-            android:title="4. trinn" />
+            android:id="@+id/grade_4"
+            android:title="@string/forth_grade" />
         <item
-            android:id="@+id/trinn_5"
-            android:title="5. trinn" />
+            android:id="@+id/grade_5"
+            android:title="@string/fifth_grade" />
         <item
-            android:id="@+id/trinn_6"
-            android:title="6. trinn" />
+            android:id="@+id/grade_6"
+            android:title="@string/sixth_grade" />
         <item
-            android:id="@+id/trinn_7"
-
-            android:title="7. trinn" />
+            android:id="@+id/grade_7"
+            android:title="@string/seventh_grade" />
         <item
-            android:id="@+id/trinn_8"
-            android:title="8. trinn" />
+            android:id="@+id/grade_8"
+            android:title="@string/eight_grade" />
         <item
-            android:id="@+id/trinn_9"
-            android:title="9. trinn" />
+            android:id="@+id/grade_9"
+            android:title="@string/ninth_grade" />
         <item
-            android:id="@+id/trinn_10"
-
-            android:title="10. trinn" />
+            android:id="@+id/grade_10"
+            android:title="@string/tenth_grade" />
     </group>
 
     <group android:id="@+id/more">
         <item
             android:id="@+id/nav_about"
             android:icon="@android:drawable/ic_dialog_info"
-            android:title="Om" />
+            android:title="@string/about" />
     </group>
 
 </menu>

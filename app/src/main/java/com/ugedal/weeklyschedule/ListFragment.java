@@ -20,32 +20,24 @@
  * THE SOFTWARE.
  */
 
-package com.ugedal.ukeplanappen;
+package com.ugedal.weeklyschedule;
 
-import android.app.DownloadManager;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.DialogInterface.OnCancelListener;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedInputStream;
@@ -57,27 +49,28 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class ListFragment extends Fragment {
-    ArrayList<Week> MyList = new ArrayList<Week>();
-
-    RecyclerView rv;
-
     static ArrayList<Integer> classes = new ArrayList<Integer>();
+
     static {
-        classes.add(R.id.trinn_1);
-        classes.add(R.id.trinn_2);
-        classes.add(R.id.trinn_3);
-        classes.add(R.id.trinn_4);
-        classes.add(R.id.trinn_5);
-        classes.add(R.id.trinn_6);
-        classes.add(R.id.trinn_7);
-        classes.add(R.id.trinn_8);
-        classes.add(R.id.trinn_9);
-        classes.add(R.id.trinn_10);
+        classes.add(R.id.grade_1);
+        classes.add(R.id.grade_2);
+        classes.add(R.id.grade_3);
+        classes.add(R.id.grade_4);
+        classes.add(R.id.grade_5);
+        classes.add(R.id.grade_6);
+        classes.add(R.id.grade_7);
+        classes.add(R.id.grade_8);
+        classes.add(R.id.grade_9);
+        classes.add(R.id.grade_10);
     }
+
+    ArrayList<Schedule> myList = new ArrayList<Schedule>();
+    RecyclerView rv;
+    ScheduleAdapter adapter;
+    SetupAsync currentAsync;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -88,28 +81,42 @@ public class ListFragment extends Fragment {
         LinearLayoutManager llm = new LinearLayoutManager(this.getContext());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(llm);
-        rv.setHasFixedSize(true);
-        new SetupAsync(this).execute();
+
+        adapter = new ScheduleAdapter(myList, this);
+        rv.setAdapter(adapter);
         return view;
 
     }
-    public void refreshContent(){
-        new SetupAsync(this).execute();
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        refreshContent();
     }
 
-    public void openPDF(Week currentWeek){
+    public void refreshContent() {
+        if (currentAsync != null) {
+            currentAsync.cancel(true);
+        }
+        currentAsync = new SetupAsync(this);
+        currentAsync.execute();
 
-        String pdf = new String();
-        if (!currentWeek.getTitle().contains(".pdf"))
+    }
+
+    public void openPDF(Schedule currentSchedule) {
+
+        String pdf = "";
+        if (!currentSchedule.getTitle().contains(".pdf"))
             pdf = ".pdf";
         SharedPreferences sharedPref = getActivity()
-				.getPreferences(Context.MODE_PRIVATE);
-        int trinn = sharedPref.getInt(getString(R.string.current_trinn), R.id.trinn_1);
+                .getPreferences(Context.MODE_PRIVATE);
+        int trinn = sharedPref.getInt(getString(R.string.current_grade_key), R.id.grade_1);
 
-        int className = classes.lastIndexOf(trinn)+1;
+        int className = classes.lastIndexOf(trinn) + 1;
 
         File pdfFile = new File(getActivity().getExternalFilesDir(null),
-                currentWeek.getWeekNumber() + currentWeek.getTitle() + className + pdf);
+                currentSchedule.getWeekNumber() + currentSchedule.getTitle() + className + pdf);
 
         if (pdfFile.isFile() && pdfFile.length() == 0)
             pdfFile.delete();
@@ -118,41 +125,81 @@ public class ListFragment extends Fragment {
             StartPDFIntentMethod(pdfFile);
             return;
         }
-        DownloadFileAsync dlAsync = new DownloadFileAsync(getActivity(),pdfFile, currentWeek);
-        dlAsync.execute(currentWeek.getDlUrl().replaceAll(" ", "%20"));
+        DownloadFileAsync dlAsync = new DownloadFileAsync(getActivity(), pdfFile, currentSchedule);
+        dlAsync.execute(currentSchedule.getDlUrl().replaceAll(" ", "%20"));
+    }
+
+    private void StartPDFIntentMethod(File pdfFile) {
+        if (pdfFile.exists() && pdfFile.length() == 0) {
+            pdfFile.delete();
+            return;
+        }
+        Uri PATH = Uri.fromFile(pdfFile);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(PATH, "application/pdf");
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        try {
+            startActivity(intent);
+            return;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(
+                getActivity());
+        builder.setTitle(getContext().getString(R.string.pdf));
+        builder.setMessage(getContext().getString(R.string.pdf_intent_message));
+        builder.setPositiveButton(getContext().getString(android.R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent marketIntent = new Intent(Intent.ACTION_VIEW);
+                marketIntent.setData(Uri
+                        .parse(getContext().getString(R.string.google_play_pdf_query)));
+                try {
+                    startActivity(marketIntent);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        builder.setNegativeButton(getContext().getString(android.R.string.no), null);
+        builder.create().show();
     }
 
     public class SetupAsync extends AsyncTask<String, String, String> {
-        ListFragment Fragment = null;
+        ListFragment mFragment = null;
+        ArrayList<Schedule> myList = new ArrayList<Schedule>();
+
         int className;
+
         public SetupAsync(ListFragment Fragment) {
             attach(Fragment);
         }
 
         void attach(ListFragment Fragment) {
-            this.Fragment = Fragment;
+            this.mFragment = Fragment;
         }
 
         void detach() {
-            this.Fragment = null;
+            this.mFragment = null;
         }
 
         @Override
         protected void onPreExecute() {
-            rv.setVisibility(View.INVISIBLE);
+            // rv.setVisibility(View.INVISIBLE);
         }
 
         @Override
         protected String doInBackground(String... aurl) {
 
             SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-            int trinn = sharedPref.getInt(getString(R.string.current_trinn), R.id.trinn_1);
+            int trinn = sharedPref.getInt(getString(R.string.current_grade_key), R.id.grade_1);
 
-            className = classes.lastIndexOf(trinn)+1;
-            String h = "http://aset.no/klassetrinn/"+className+"-trinn/?vis=ukeplaner";
+            className = classes.lastIndexOf(trinn) + 1;
 
             try {
-                MyList = new HTMLWeekExtractor(getActivity()).extractWeeks(h, className);
+                myList = ScheduleExtractor.extractSchedules(className, sharedPref, mFragment.getContext());
             } catch (IOException e1) {
                 e1.printStackTrace();
                 return e1.getMessage();
@@ -163,12 +210,17 @@ public class ListFragment extends Fragment {
         }
 
         protected void onPostExecute(String result) {
-            ((MainActivity) getActivity()).swipeContainer.setRefreshing(false);
-            if(result==null) {
+            if (isCancelled())
+                return;
+
+            ((MainActivity) getActivity()).setRefreshing(false);
+            if (result == null) {
                 try {
-                    WeekAdapter adapter = new WeekAdapter(MyList, getActivity());
-                    rv.setAdapter(adapter);
+                    mFragment.myList.clear();
+                    ;
+                    mFragment.myList.addAll(myList);
                     rv.setVisibility(View.VISIBLE);
+                    adapter.notifyDataSetChanged();
 
 
                 } catch (Exception e) {
@@ -177,48 +229,51 @@ public class ListFragment extends Fragment {
                     Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             } else {
-                MyList = new HTMLWeekExtractor(getActivity()).getList(null,className);
-                WeekAdapter adapter = new WeekAdapter(MyList, getActivity());
-                rv.setAdapter(adapter);
+                SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                myList = ScheduleExtractor.getList(null, className, sharedPref, mFragment.getContext());
+                mFragment.myList.clear();
+                ;
+                mFragment.myList.addAll(myList);
+                adapter.notifyDataSetChanged();
                 rv.setVisibility(View.VISIBLE);
                 Toast.makeText(getActivity(), result, Toast.LENGTH_SHORT).show();
             }
 
         }
     }
-    public class DownloadFileAsync extends AsyncTask<String, String, String>
-            implements OnCancelListener {
+
+    public class DownloadFileAsync extends AsyncTask<String, String, String> {
 
         AppCompatActivity activity = null;
         InputStream input = null;
         OutputStream output = null;
         File pdfFile;
-        Week currentWeek;
+        Schedule currentSchedule;
 
-        DownloadFileAsync(FragmentActivity act, File pdfFile, Week currentWeek) {
+        DownloadFileAsync(FragmentActivity act, File pdfFile, Schedule currentSchedule) {
             this.pdfFile = pdfFile;
-            this.currentWeek = currentWeek;
+            this.currentSchedule = currentSchedule;
         }
 
 
         @Override
         protected void onPreExecute() {
-            ((MainActivity) getActivity()).swipeContainer.setRefreshing(true);
+            ((MainActivity) getActivity()).setRefreshing(true);
         }
 
         @Override
-        protected String doInBackground(String... aurl) {
+        protected String doInBackground(String... urls) {
             try {
                 int count;
-                URL url1 = new URL(aurl[0]);
-                URLConnection conexion = url1.openConnection();
-                conexion.setConnectTimeout(1000 * 3);
+                URL url1 = new URL(urls[0]);
+                URLConnection connection = url1.openConnection();
+                connection.setConnectTimeout(1000 * 3);
 
-                conexion.connect();
+                connection.connect();
 
                 // this will be useful so that you can show a tipical 0-100%
                 // progress bar
-                int lenghtOfFile = conexion.getContentLength();
+                int lenghtOfFile = connection.getContentLength();
 
                 // download the file
                 input = new BufferedInputStream(url1.openStream());
@@ -246,51 +301,16 @@ public class ListFragment extends Fragment {
         }
 
         protected void onPostExecute(String result) {
-            ((MainActivity) getActivity()).swipeContainer.setRefreshing(false);
-            if(result==null) {
+            if (isCancelled())
+                return;
+
+            ((MainActivity) getActivity()).setRefreshing(false);
+            if (result == null) {
                 StartPDFIntentMethod(pdfFile);
             } else {
                 pdfFile.delete();
                 Toast.makeText(getActivity(), result, Toast.LENGTH_SHORT).show();
             }
         }
-    }
-
-    private void StartPDFIntentMethod(File pdfFile) {
-        if (pdfFile.exists() && pdfFile.length() == 0) {
-            pdfFile.delete();
-			return;
-        }
-		Uri PATH = Uri.fromFile(pdfFile);
-		Intent intent = new Intent(Intent.ACTION_VIEW);
-		intent.setDataAndType(PATH, "application/pdf");
-		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-		try {
-			startActivity(intent);
-			return;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		AlertDialog.Builder builder = new AlertDialog.Builder(
-				getActivity());
-		builder.setTitle("PDF");
-		builder.setMessage("Kan ikke åpne PDF. Åpne Google Play for å finne en PDF-leser.");
-		builder.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				Intent marketIntent = new Intent(Intent.ACTION_VIEW);
-				marketIntent.setData(Uri
-						.parse("https://play.google.com/store/search?q=pdf&c=apps"));
-				try {
-					startActivity(marketIntent);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-		builder.setNegativeButton("Nei", null);
-		builder.create().show();
     }
 }

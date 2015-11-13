@@ -20,10 +20,48 @@
  * THE SOFTWARE.
  */
 
-package com.ugedal.ukeplanappen;
+package com.ugedal.weeklyschedule;
 
-import android.view.View;
+public class Schedule {
 
-public interface ItemClickListener {
-    void onClick(View view, int position, boolean isLongClick);
+    public static final int NO_WEEK_NUMBER = -0xff;
+    private String title;
+    private int weekNumber;
+    private String dlUrl;
+    private String info;
+
+
+    public Schedule() {
+        super();
+    }
+
+    public Schedule(int weekNumber, String title, String dlUrl, String info) {
+        super();
+        this.weekNumber = weekNumber;
+        this.title = title;
+        this.dlUrl = dlUrl;
+        this.info = info;
+
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDlUrl() {
+        return dlUrl;
+    }
+
+    public String getInfo() {
+        return info;
+    }
+
+    public int getWeekNumber() {
+        return weekNumber;
+    }
+
+    @Override
+    public String toString() {
+        return getWeekNumber() + getTitle() + getDlUrl();
+    }
 }

@@ -1,10 +1,27 @@
 <resources>
-    <string name="app_name">Ukeplanappen</string>
+    <string name="app_name">Weekly Schedule</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="weekly_schedule">"Schedule "</string>
+    <string name="document">Document</string>
+    <string name="about">About</string>
+    <string name="pdf_intent_message">Unable to open the PDF. Open Google Play to find a PDF reader.</string>
 
-    <string name="action_settings">Settings</string>
-    <string name="current_trinn">trinn_shiz</string>
+    <string name="first_grade">1st grade</string>
+    <string name="second_grade">2nd grade</string>
+    <string name="third_grade">3rd grade</string>
+    <string name="forth_grade">4th grade</string>
+    <string name="fifth_grade">5th grade</string>
+    <string name="sixth_grade">6th grade</string>
+    <string name="seventh_grade">7th grade</string>
+    <string name="eight_grade">8th grade</string>
+    <string name="ninth_grade">9th grade</string>
+    <string name="tenth_grade">10th grade</string>
+
     <string name="about_message">License: The MIT License (MIT)</string>
+    <string name="pdf">PDF</string>
+
+    <string name="google_play_pdf_query"><![CDATA[https://play.google.com/store/search?q=pdf&c=apps]]></string>
+    <string name="current_grade_key">current_grade_key</string>
 </resources>

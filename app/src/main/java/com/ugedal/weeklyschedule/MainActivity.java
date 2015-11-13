@@ -20,33 +20,27 @@
  * THE SOFTWARE.
  */
 
-package com.ugedal.ukeplanappen;
+package com.ugedal.weeklyschedule;
 
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
-import android.text.SpannableString;
-import android.text.util.Linkify;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
+import android.text.SpannableString;
+import android.text.util.Linkify;
 import android.view.MenuItem;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener{
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     ListFragment mListFragment;
     SwipeRefreshLayout swipeContainer;
@@ -55,28 +49,38 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
+        mListFragment = (ListFragment) getSupportFragmentManager().findFragmentById(R.id.list_fragment);
+        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+
+        setSupportActionBar(toolbar);
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
 
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        mListFragment = (ListFragment) getSupportFragmentManager().findFragmentById(R.id.list_fragment);
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        int trinn = sharedPref.getInt(getString(R.string.current_trinn), R.id.trinn_1);
+        final int trinn = sharedPref.getInt(getString(R.string.current_grade_key), R.id.grade_1);
         navigationView.setCheckedItem(trinn);
+        navigationView.post(new Runnable() {
+            @Override
+            public void run() {
+                TextView text = (TextView) findViewById(R.id.textView);
+                if (text != null)
+                    text.setText(navigationView.getMenu().findItem(trinn).getTitle());
+            }
+        });
         getSupportActionBar().setTitle(navigationView.getMenu().findItem(trinn).getTitle());
 
-
-        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         // Setup refresh listener which triggers new data loading
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -89,7 +93,24 @@ public class MainActivity extends AppCompatActivity
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
 
+        if (savedInstanceState == null)
+            swipeContainer.post(new Runnable() {
+                @Override
+                public void run() {
+                    swipeContainer.setRefreshing(true);
+                }
+            });
 
+    }
+
+    public void setRefreshing(boolean refreshing) {
+        if (swipeContainer != null)
+            swipeContainer.setRefreshing(refreshing);
+
+    }
+
+    public ListFragment getListFragment() {
+        return mListFragment;
     }
 
     @Override
@@ -101,6 +122,7 @@ public class MainActivity extends AppCompatActivity
             super.onBackPressed();
         }
     }
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -108,17 +130,19 @@ public class MainActivity extends AppCompatActivity
 
         int id = item.getItemId();
         int group_id = item.getGroupId();
-        if (group_id == R.id.trinn_chooser){
+        if (group_id == R.id.trinn_chooser) {
             // Save new state, and update the fragment
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putInt(getString(R.string.current_trinn), id);
-            editor.commit();
+            editor.putInt(getString(R.string.current_grade_key), id);
+            editor.apply();
 
             TextView text = (TextView) findViewById(R.id.textView);
             text.setText(item.getTitle());
 
             getSupportActionBar().setTitle(item.getTitle());
+            mListFragment.myList.clear();
+            mListFragment.adapter.notifyDataSetChanged();
             swipeContainer.setRefreshing(true);
 
             mListFragment.refreshContent();
@@ -126,12 +150,12 @@ public class MainActivity extends AppCompatActivity
         }
         if (id == R.id.nav_about) {
             AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-            alertDialog.setTitle("Om");
+            alertDialog.setTitle(getString(R.string.about));
             final SpannableString s =
                     new SpannableString(getText(R.string.about_message));
             Linkify.addLinks(s, Linkify.WEB_URLS);
             alertDialog.setMessage(s);
-            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Lukk",
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(android.R.string.cancel),
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
