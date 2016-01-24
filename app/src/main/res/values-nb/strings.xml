@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ukeplan</string>
+
+    <string name="navigation_drawer_open">Åpne navigasjonspanel</string>
+    <string name="navigation_drawer_close">Lukk navigasjonspanel</string>
+    <string name="weekly_schedule">"Ukeplan "</string>
+    <string name="document">Dokument</string>
+    <string name="about">Om</string>
+    <string name="pdf_intent_message">Kan ikke åpne PDF. Åpne Google Play for å finne en PDF-leser.</string>
+
+    <string name="first_grade">1. trinn</string>
+    <string name="second_grade">2. trinn</string>
+    <string name="third_grade">3. trinn</string>
+    <string name="forth_grade">4. trinn</string>
+    <string name="fifth_grade">5. trinn</string>
+    <string name="sixth_grade">6. trinn</string>
+    <string name="seventh_grade">7. trinn</string>
+    <string name="eight_grade">8. trinn</string>
+    <string name="ninth_grade">9. trinn</string>
+    <string name="tenth_grade">10. trinn</string>
+</resources>
