@@ -22,20 +22,23 @@
 
 package com.ugedal.weeklyschedule;
 
+import android.widget.Toast;
+
 public class Schedule {
 
     public static final int NO_WEEK_NUMBER = -0xff;
     private String title;
-    private int weekNumber;
+    private String weekNumber;
     private String dlUrl;
     private String info;
+    private String fileName;
 
 
     public Schedule() {
         super();
     }
 
-    public Schedule(int weekNumber, String title, String dlUrl, String info) {
+    public Schedule(String weekNumber, String title, String dlUrl, String info) {
         super();
         this.weekNumber = weekNumber;
         this.title = title;
@@ -56,8 +59,18 @@ public class Schedule {
         return info;
     }
 
-    public int getWeekNumber() {
+    public String getWeekNumber() {
         return weekNumber;
+    }
+
+    public String getFileName (){
+        String filename = String.valueOf(this.dlUrl.hashCode());
+        int i = dlUrl.lastIndexOf('.');
+        if (i > 0) {
+            filename += "." + dlUrl.substring(i+1);
+        }
+
+        return filename;
     }
 
     @Override

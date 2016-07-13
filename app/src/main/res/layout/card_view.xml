@@ -1,65 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    android:paddingTop="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:paddingBottom="16dp"
     android:paddingLeft="6dp"
-    android:paddingRight="6dp">
+    android:paddingRight="6dp"
+    android:paddingTop="16dp">
 
     <android.support.v7.widget.CardView
+        android:id="@+id/cv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/cv"
         android:foreground="?android:attr/selectableItemBackground"
 
         card_view:cardElevation="2dp"
-        card_view:cardUseCompatPadding="true"
-        >
+        card_view:cardUseCompatPadding="true">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            >
+            android:padding="16dp">
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:id="@+id/image"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentTop="true"
-                android:layout_marginRight="16dp"
-                />
-            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginRight="16dp" />
+
+            <TextView
                 android:id="@+id/big_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentTop="true"
-                android:layout_toRightOf="@+id/image"
                 android:layout_marginRight="16dp"
+                android:layout_toRightOf="@+id/image"
                 android:fontFamily="sans-serif-thin"
-                android:textSize="60sp"
-                />
+                android:textSize="60sp" />
 
-            <TextView
+            <RelativeLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/title"
-                android:layout_toRightOf="@+id/big_number"
-                android:layout_alignParentTop="true"
-                android:textSize="30sp"
-                />
+                android:layout_height="match_parent"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/big_number">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/info"
-                android:layout_toRightOf="@+id/big_number"
-                android:layout_below="@+id/title"
-                />
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:id="@+id/info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:layout_below="@+id/title" />
+            </RelativeLayout>
 
         </RelativeLayout>
 

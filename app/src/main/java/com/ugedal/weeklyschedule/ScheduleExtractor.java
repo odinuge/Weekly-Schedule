@@ -24,6 +24,7 @@ package com.ugedal.weeklyschedule;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -34,6 +35,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -89,42 +92,64 @@ public class ScheduleExtractor {
 
         Elements schedules = doc.getElementsByAttributeValue("id", "GradeTop").select("a[href]");
 
-        Pattern pattern = Pattern.compile("[0-9]0?[ABCDabcd]");
+        Pattern weekNumberPattern = Pattern.compile("[^_0-9]([0-9]{1,2})");
+        Pattern classNamePattern = Pattern.compile("(^|[^0-9])(10|[1-9])\\s?([a-eA-E])");
+
         SimpleDateFormat sdf = new SimpleDateFormat("dd. MMM yy");
 
         for (Element schedule : schedules) {
-            int weekNumber = getWeekNumber(schedule.text());
-            String title = schedule.text().replace(".pdf", "");
+            String htmlText = schedule.text();
+            String downloadUrl = schedule.attr("abs:href");
+            String title = htmlText
+                    .replace(".pdf", "")
+                    .replace(".docx", "");
             title = title.substring(0, 1).toUpperCase() + title.substring(1).toLowerCase();
 
+
+            Matcher m = classNamePattern.matcher(htmlText);
+            String classTitle = ctx.getString(R.string.weekly_schedule);
+            if (m.find()) {
+                title += (m.group(2) + m.group(3).toUpperCase());
+                htmlText = htmlText.replaceAll(m.group(0), "");
+            }
+
+            List<Integer> weekNumberList = getWeekNumber(htmlText, weekNumberPattern);
+
+
+
             String info = "";
-            if (weekNumber != Schedule.NO_WEEK_NUMBER) {
-
-                Calendar cal = Calendar.getInstance();
-                cal.setFirstDayOfWeek(Calendar.MONDAY);
-                cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-                if (weekNumber > Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + 2) {
-                    cal.set(Calendar.YEAR, Calendar.getInstance().get(Calendar.YEAR) - 1);
-                }
-                cal.set(Calendar.WEEK_OF_YEAR, weekNumber);
-
-
-                info = sdf.format(cal.getTime());
-                info += " - ";
-                cal.add(Calendar.DATE, 6);
-                info += sdf.format(cal.getTime());
-
-                title = ctx.getString(R.string.weekly_schedule);
-
-                Matcher m = pattern.matcher(schedule.text());
-                if (m.find()) {
-                    title += (m.group(0).toUpperCase());
-                }
-            } else {
+            String weekNumberText = "";
+            if (weekNumberList.isEmpty()) {
                 info = title;
                 title = ctx.getString(R.string.document);
+            } else {
+                title = classTitle;
+                int firstWeek = weekNumberList.get(0);
+                int lastWeek = weekNumberList.get(weekNumberList.size() - 1);
+
+
+                Calendar firstWeekCal = Calendar.getInstance(new Locale("no"));
+                firstWeekCal.setFirstDayOfWeek(Calendar.MONDAY);
+                firstWeekCal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+                if (firstWeek > Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + 2) {
+                    firstWeekCal.set(Calendar.YEAR, Calendar.getInstance().get(Calendar.YEAR) - 1);
+                }
+                firstWeekCal.set(Calendar.WEEK_OF_YEAR, firstWeek);
+
+                Calendar lastWeekCal = Calendar.getInstance(new Locale("no"));
+                lastWeekCal.setFirstDayOfWeek(Calendar.MONDAY);
+                lastWeekCal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+                if (lastWeek > Calendar.getInstance().get(Calendar.WEEK_OF_YEAR) + 2) {
+                    lastWeekCal.set(Calendar.YEAR, Calendar.getInstance().get(Calendar.YEAR) - 1);
+                }
+                lastWeekCal.set(Calendar.WEEK_OF_YEAR, lastWeek);
+                info = String.format("%s - %s", sdf.format(firstWeekCal.getTime()), sdf.format(lastWeekCal.getTime()));
+
+                weekNumberText = TextUtils.join("\n", weekNumberList);
+                final long calendarWeek = 34;
             }
-            result.add(new Schedule(weekNumber, title, schedule.attr("abs:href"), info));
+
+            result.add(new Schedule(weekNumberText, title, downloadUrl, info));
 
         }
 
@@ -141,9 +166,17 @@ public class ScheduleExtractor {
      * @return the week of year, or Schedule.NO_WEEK_NUMBER
      * @see Schedule
      */
-    private static int getWeekNumber(String data) {
-        String weekNumberString = data.replaceAll("[0-9]0?[ABCDabcd]_?[0-9]?[0-9]?", "").replaceAll("\\D+", "");
-        return !weekNumberString.isEmpty() ? Integer.parseInt(weekNumberString) : Schedule.NO_WEEK_NUMBER;
+    private static List<Integer> getWeekNumber(String data, Pattern weekNumberPattern) {
+        Matcher m = weekNumberPattern.matcher(data);
+        List<Integer> weekNumberList = new ArrayList<Integer>();
+        while (m.find()) {
+            int newNum = Integer.parseInt(m.group(1));
+            if (newNum <= 53 && newNum >= 1)
+                weekNumberList.add(newNum);
+        }
+
+        return weekNumberList;
+
     }
 
 }

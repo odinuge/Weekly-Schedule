@@ -38,6 +38,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import java.io.BufferedInputStream;
@@ -105,10 +106,8 @@ public class ListFragment extends Fragment {
     }
 
     public void openPDF(Schedule currentSchedule) {
+        String downloadUrl = currentSchedule.getDlUrl();
 
-        String pdf = "";
-        if (!currentSchedule.getTitle().contains(".pdf"))
-            pdf = ".pdf";
         SharedPreferences sharedPref = getActivity()
                 .getPreferences(Context.MODE_PRIVATE);
         int trinn = sharedPref.getInt(getString(R.string.current_grade_key), R.id.grade_1);
@@ -116,7 +115,7 @@ public class ListFragment extends Fragment {
         int className = classes.lastIndexOf(trinn) + 1;
 
         File pdfFile = new File(getActivity().getExternalFilesDir(null),
-                currentSchedule.getWeekNumber() + currentSchedule.getTitle() + className + pdf);
+                currentSchedule.getFileName());
 
         if (pdfFile.isFile() && pdfFile.length() == 0)
             pdfFile.delete();
@@ -126,7 +125,16 @@ public class ListFragment extends Fragment {
             return;
         }
         DownloadFileAsync dlAsync = new DownloadFileAsync(getActivity(), pdfFile, currentSchedule);
-        dlAsync.execute(currentSchedule.getDlUrl().replaceAll(" ", "%20"));
+        dlAsync.execute(downloadUrl.replaceAll(" ", "%20"));
+    }
+    // url = file path or whatever suitable URL you want.
+    public static String getMimeType(String url) {
+        String type = null;
+        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+        if (extension != null) {
+            type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        }
+        return type;
     }
 
     private void StartPDFIntentMethod(File pdfFile) {
@@ -136,7 +144,7 @@ public class ListFragment extends Fragment {
         }
         Uri PATH = Uri.fromFile(pdfFile);
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(PATH, "application/pdf");
+        intent.setDataAndType(PATH, getMimeType(pdfFile.getPath()));
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         try {

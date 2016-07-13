@@ -59,12 +59,12 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.WeekVi
             }
         });
 
-        if (curr.getWeekNumber() == Schedule.NO_WEEK_NUMBER) {
+        if (curr.getWeekNumber().isEmpty()) {
             contactViewHolder.bigNumber.setVisibility(View.GONE);
             return;
         }
         contactViewHolder.bigNumber.setVisibility(View.VISIBLE);
-        contactViewHolder.bigNumber.setText(Integer.toString(curr.getWeekNumber()));
+        contactViewHolder.bigNumber.setText(curr.getWeekNumber());
 
     }
 
